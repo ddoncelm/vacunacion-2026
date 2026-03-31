@@ -1298,3 +1298,59 @@ body {
 .cal-legend-dot.rescate      { background: var(--warning); }
 .cal-legend-dot.estacional   { background: #3498DB; }
 .cal-legend-dot.condicional  { background: #9B59B6; }
+
+/* ===================================================
+   LOGO DONCELPROJECT — estilo marca completa
+=================================================== */
+.dp-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+.dp-brand-link:hover {
+  background: rgba(0,0,0,0.05);
+}
+.dp-brand-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  display: block;
+}
+.dp-brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+.dp-brand-name {
+  font-size: 1.05rem;
+  color: #1a1a2e;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+.dp-brand-name strong {
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.dp-brand-email {
+  font-size: 0.62rem;
+  color: #888;
+  letter-spacing: 0.08em;
+  margin-top: 0.1rem;
+}
+
+/* En footer de la app (fondo oscuro) — ajuste de colores */
+.app-footer .dp-brand-name,
+.app-footer .dp-brand-name strong {
+  color: rgba(255,255,255,0.9);
+}
+.app-footer .dp-brand-email {
+  color: rgba(255,255,255,0.5);
+}
+.app-footer .dp-brand-link:hover {
+  background: rgba(255,255,255,0.08);
+}
