@@ -46,6 +46,7 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 function initApp() {
   initTabs();
   initAgeTab();
+  initCalendarioTab();
   initVaccineTab();
   initRiskTab();
   initUpdateTab();
@@ -66,119 +67,296 @@ function initTabs() {
 }
 
 // ===================================================
-// TAB: POR EDAD
+// TAB: POR EDAD — tablero visual
 // ===================================================
+
+// Mapa de age-keys a entradas del calendario
+const AGE_KEYS = {
+  "rn":          { label: "Recién nacido",     sub: "0 meses",                  icon: "🏥", meses: 0,   maxMeses: 0  },
+  "2m":          { label: "2 meses",            sub: "1ª visita vacunal",         icon: "💉", meses: 2,   maxMeses: 2  },
+  "4m":          { label: "4 meses",            sub: "2ª visita vacunal",         icon: "💉", meses: 4,   maxMeses: 4  },
+  "6m":          { label: "6 meses",            sub: "3ª visita vacunal",         icon: "💉", meses: 6,   maxMeses: 6  },
+  "11m":         { label: "11 meses",           sub: "Refuerzo",                  icon: "💉", meses: 11,  maxMeses: 11 },
+  "12m":         { label: "12 meses",           sub: "1 año",                     icon: "💉", meses: 12,  maxMeses: 12 },
+  "15m":         { label: "15 meses",           sub: "Refuerzo",                  icon: "💉", meses: 15,  maxMeses: 15 },
+  "2a":          { label: "2–3 años",           sub: "NOVEDAD 2026",              icon: "🌟", anios: 2,   maxAnios: 3  },
+  "6a":          { label: "6 años",             sub: "Refuerzo escolar",          icon: "🏫", anios: 6,   maxAnios: 6  },
+  "12a":         { label: "12 años",            sub: "Vacunación escolar",        icon: "🏫", anios: 12,  maxAnios: 12 },
+  "14a":         { label: "14 años",            sub: "Refuerzo Tdpa",             icon: "💉", anios: 14,  maxAnios: 14 },
+  "rescate-13-21":{ label: "13–21 años",        sub: "Rescate VPH / MenACWY",     icon: "🔄", anios: 13,  maxAnios: 21 },
+  "embarazo":    { label: "Embarazada",         sub: "Cualquier trimestre",       icon: "🤰", especial: "embarazo" },
+  "puerperio":   { label: "Puerperio",          sub: "0–6 meses postparto",       icon: "👩‍🍼", especial: "puerperio" },
+  "60a":         { label: "60–80 años",         sub: "Neumococo + Gripe anual",   icon: "💊", anios: 60,  maxAnios: 80 },
+  "65a":         { label: "65 años",            sub: "Herpes zóster",             icon: "⭐", anios: 65,  maxAnios: 65 },
+  "66-67a":      { label: "66–67 años",         sub: "Rescate herpes zóster",     icon: "🔄", anios: 66,  maxAnios: 67 },
+  "70a":         { label: "≥ 70 años",          sub: "COVID-19 anual",            icon: "🛡️", anios: 70  },
+};
+
 function initAgeTab() {
-  document.querySelectorAll(".type-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentAgeMode = btn.dataset.type;
-      document.getElementById("mesesControl").classList.toggle("hidden", currentAgeMode !== "meses");
-      document.getElementById("aniosControl").classList.toggle("hidden", currentAgeMode !== "anios");
-      renderEdadResults();
-    });
-  });
+  document.querySelectorAll(".age-tile").forEach(tile => {
+    tile.addEventListener("click", () => {
+      const key = tile.dataset.ageKey;
+      const wasActive = tile.classList.contains("active");
 
-  document.getElementById("mesesSlider").addEventListener("input", function () {
-    document.getElementById("mesesValue").textContent = this.value + " meses";
-    renderEdadResults();
-  });
-  document.getElementById("aniosSlider").addEventListener("input", function () {
-    document.getElementById("aniosValue").textContent = this.value + " años";
-    renderEdadResults();
-  });
+      // Desactivar todas
+      document.querySelectorAll(".age-tile").forEach(t => t.classList.remove("active"));
 
-  document.querySelectorAll(".qa-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".qa-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      if (btn.dataset.m !== undefined) {
-        currentAgeMode = "meses";
-        document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
-        document.querySelector("[data-type='meses']").classList.add("active");
-        document.getElementById("mesesControl").classList.remove("hidden");
-        document.getElementById("aniosControl").classList.add("hidden");
-        const m = parseInt(btn.dataset.m);
-        document.getElementById("mesesSlider").value = m;
-        document.getElementById("mesesValue").textContent = m === 0 ? "0 meses (RN)" : m + " meses";
-      } else {
-        currentAgeMode = "anios";
-        document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
-        document.querySelector("[data-type='anios']").classList.add("active");
-        document.getElementById("mesesControl").classList.add("hidden");
-        document.getElementById("aniosControl").classList.remove("hidden");
-        const y = parseInt(btn.dataset.y);
-        document.getElementById("aniosSlider").value = y;
-        document.getElementById("aniosValue").textContent = y + " años";
+      if (wasActive) {
+        // Segundo clic en el mismo: cerrar panel
+        closeAgePanel();
+        return;
       }
-      renderEdadResults();
+
+      tile.classList.add("active");
+      showAgePanel(key, tile);
     });
+  });
+
+  document.getElementById("agePanelClose").addEventListener("click", () => {
+    document.querySelectorAll(".age-tile").forEach(t => t.classList.remove("active"));
+    closeAgePanel();
   });
 }
 
-function renderEdadResults() {
-  const container = document.getElementById("edadResults");
-  const meses = currentAgeMode === "meses" ? parseInt(document.getElementById("mesesSlider").value) : null;
-  const anios = currentAgeMode === "anios" ? parseInt(document.getElementById("aniosSlider").value) : null;
+function closeAgePanel() {
+  const panel = document.getElementById("agePanel");
+  panel.classList.add("hidden");
+}
 
+function showAgePanel(key, tile) {
+  const cfg   = AGE_KEYS[key];
+  if (!cfg) return;
+  const panel = document.getElementById("agePanel");
+  const cards = document.getElementById("agePanelCards");
+
+  // Título
+  document.getElementById("agePanelIcon").textContent  = cfg.icon;
+  document.getElementById("agePanelTitle").textContent = cfg.label;
+  document.getElementById("agePanelSub").textContent   = cfg.sub;
+
+  // Buscar entradas coincidentes en CALENDARIO_POR_EDAD
   const matches = CALENDARIO_POR_EDAD.filter(entry => {
-    if (meses !== null) {
-      if (entry.edadMin_m !== undefined && entry.edadMax_m !== undefined && meses >= entry.edadMin_m && meses <= entry.edadMax_m) return true;
-      if (entry.edadMin_m !== undefined && entry.edadMax_m === undefined && meses >= entry.edadMin_m) return true;
-      const mAsY = meses / 12;
-      if (entry.edadMin_y !== undefined && entry.edadMax_y !== undefined && mAsY >= entry.edadMin_y && mAsY <= entry.edadMax_y) return true;
+    // Por especial (embarazo, puerperio)
+    if (cfg.especial) return entry.especial === cfg.especial;
+
+    // Por meses exacto
+    if (cfg.meses !== undefined) {
+      if (entry.edadMin_m !== undefined && entry.edadMax_m !== undefined &&
+          cfg.meses >= entry.edadMin_m && cfg.meses <= entry.edadMax_m) return true;
+      if (entry.edadMin_m !== undefined && entry.edadMax_m === undefined &&
+          cfg.meses >= entry.edadMin_m) return true;
+      // Convertir a años por si la entrada usa años
+      const mAsY = cfg.meses / 12;
+      if (entry.edadMin_y !== undefined && entry.edadMax_y !== undefined &&
+          mAsY >= entry.edadMin_y && mAsY <= entry.edadMax_y) return true;
     }
-    if (anios !== null) {
-      if (entry.edadMin_y !== undefined && entry.edadMax_y !== undefined && anios >= entry.edadMin_y && anios <= entry.edadMax_y) return true;
-      if (entry.edadMin_y !== undefined && entry.edadMax_y === undefined && anios >= entry.edadMin_y) return true;
-      const yAsM = anios * 12;
-      if (entry.edadMin_m !== undefined && entry.edadMax_m !== undefined && yAsM >= entry.edadMin_m && yAsM <= entry.edadMax_m) return true;
+
+    // Por rango de años
+    if (cfg.anios !== undefined) {
+      const maxA = cfg.maxAnios !== undefined ? cfg.maxAnios : cfg.anios;
+      if (entry.edadMin_y !== undefined && entry.edadMax_y !== undefined) {
+        // Solapamiento de rangos
+        if (cfg.anios <= entry.edadMax_y && maxA >= entry.edadMin_y) return true;
+      }
+      if (entry.edadMin_y !== undefined && entry.edadMax_y === undefined &&
+          maxA >= entry.edadMin_y) return true;
+      // Años a meses
+      const yAsM = cfg.anios * 12;
+      const maxM = maxA * 12;
+      if (entry.edadMin_m !== undefined && entry.edadMax_m !== undefined &&
+          yAsM <= entry.edadMax_m && maxM >= entry.edadMin_m) return true;
     }
+
     return false;
   });
 
-  if (!matches.length) {
-    const lbl = meses !== null ? (meses === 0 ? "recién nacido" : `${meses} meses`) : `${anios} años`;
-    container.innerHTML = `
-      <div class="results-empty">
-        <div class="empty-icon">✅</div>
-        <p>No hay vacunas sistemáticas programadas para <strong>${lbl}</strong>.</p>
-        <p style="margin-top:0.5rem;font-size:0.85rem;color:var(--gris-muted)">Revisa el historial y vacunas de rescate en cada contacto asistencial.</p>
-      </div>`;
-    return;
-  }
-
-  const ageLabel = meses !== null ? (meses === 0 ? "Recién nacido (0 meses)" : `${meses} meses`) : `${anios} años`;
-  let html = `<h3 style="font-family:var(--font-display);color:var(--verde-dark);margin-bottom:1rem;font-size:1.1rem;">
-    📋 Vacunas indicadas para: <span style="color:var(--verde)">${ageLabel}</span>
-  </h3><div class="vaccine-cards-grid">`;
-
+  // Recopilar todas las vacunas únicas
+  const seen = new Set();
+  const vacunasList = [];
   matches.forEach(entry => {
     (entry.vacunas || []).forEach(v => {
-      const vac = VACUNAS[v.sigla];
-      if (!vac) return;
-      const isRescate    = v.tipo === "rescate";
-      const isEstacional = v.tipo === "estacional";
-      html += `
-        <div class="vaccine-card ${isRescate ? "rescate" : ""}" onclick="openVaccineModal('${v.sigla}')">
-          <div class="vc-header">
-            <div class="vc-name">${vac.nombre}</div>
-            <div class="vc-badge ${isRescate ? "rescate" : ""}">
-              ${isRescate ? "🔄 Rescate" : isEstacional ? "📅 Estacional" : "✅ Sistemática"}
-            </div>
-          </div>
-          <div class="vc-meta"><strong>Comercial:</strong> ${vac.comercial}</div>
-          <div class="vc-meta"><strong>Contexto:</strong> ${v.nota}</div>
-          <div class="vc-tags">
-            <span class="vc-tag via-${vac.via}">💉 ${vac.viaLabel}</span>
-            <span class="vc-tag">📍 ${vac.zona}</span>
-          </div>
-          <div class="vc-expand">Ver ficha completa →</div>
-        </div>`;
+      if (!seen.has(v.sigla)) {
+        seen.add(v.sigla);
+        vacunasList.push(v);
+      }
     });
   });
-  container.innerHTML = html + "</div>";
+
+  if (!vacunasList.length) {
+    cards.innerHTML = `<div class="panel-empty">No hay vacunas sistemáticas registradas para esta edad.</div>`;
+  } else {
+    cards.innerHTML = vacunasList.map(v => {
+      const vac = VACUNAS[v.sigla];
+      if (!vac) return "";
+      const tipo = v.tipo || "sistematica";
+      const tipoLabel = { sistematica: "✅ Sistemática", rescate: "🔄 Rescate", estacional: "📅 Estacional", condicional: "⚠️ Condicional" }[tipo] || tipo;
+      return `
+        <div class="panel-vcard tipo-${tipo}" onclick="openVaccineModal('${v.sigla}')">
+          <div class="pvc-top">
+            <div class="pvc-nombre">${vac.nombre}</div>
+            <div class="pvc-tipo">${tipoLabel}</div>
+          </div>
+          <div class="pvc-comercial">🏷️ ${vac.comercial}</div>
+          <div class="pvc-contexto">${v.nota || vac.momentos}</div>
+          <div class="pvc-tags">
+            <span class="pvc-tag ${vac.via}">💉 ${vac.viaLabel}</span>
+            <span class="pvc-tag">📍 ${vac.zona.length > 30 ? vac.zona.slice(0,30) + "…" : vac.zona}</span>
+          </div>
+          <div class="pvc-more">Ver ficha completa →</div>
+        </div>`;
+    }).join("");
+  }
+
+  panel.classList.remove("hidden");
+  // Scroll suave al panel solo en móvil
+  if (window.innerWidth < 768) {
+    setTimeout(() => panel.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  }
+}
+
+// Mantener compatibilidad con cualquier referencia antigua
+function renderEdadResults() {}
+
+
+
+// ===================================================
+// TAB: CALENDARIO VISUAL COMPLETO
+// Tabla estilo calendario oficial: filas = vacunas,
+// columnas = edades de referencia. Click en celda → modal
+// ===================================================
+
+// Columnas del calendario (etiquetas + clave de búsqueda)
+const CAL_COLS = [
+  { label: "RN",   key: "rn"   },
+  { label: "2m",   key: "2m"   },
+  { label: "4m",   key: "4m"   },
+  { label: "6m",   key: "6m"   },
+  { label: "11m",  key: "11m"  },
+  { label: "12m",  key: "12m"  },
+  { label: "15m",  key: "15m"  },
+  { label: "2-3a", key: "2a"   },
+  { label: "6a",   key: "6a"   },
+  { label: "12a",  key: "12a"  },
+  { label: "14a",  key: "14a"  },
+  { label: "13-21a",key:"rescate-13-21"},
+  { label: "Emb.", key: "embarazo" },
+  { label: "Puerp.",key: "puerperio"},
+  { label: "60-80a",key:"60a"  },
+  { label: "65a",  key: "65a"  },
+  { label: "66-67a",key:"66-67a"},
+  { label: "≥70a", key: "70a"  },
+];
+
+// Vacunas a mostrar como filas (orden del calendario oficial)
+const CAL_ROWS = [
+  "VRS","Tdpa","DTPa_VPI","Td","HEX","HB","Hib","RV",
+  "VNC20","MenB","MenACWY","TV","VVZ","VPH","HZ","GRIPE","COVID"
+];
+
+function initCalendarioTab() {
+  renderCalendario();
+}
+
+function renderCalendario() {
+  const wrap = document.getElementById("calTable");
+  if (!wrap) return;
+
+  // Precompute: para cada vacunaKey → set de age-keys donde aparece
+  const vacunaEnEdad = {};           // vacunaKey → { ageKey: {tipo, nota} }
+  CAL_ROWS.forEach(k => { vacunaEnEdad[k] = {}; });
+
+  CAL_COLS.forEach(col => {
+    const cfg = AGE_KEYS[col.key];
+    if (!cfg) return;
+
+    const matches = CALENDARIO_POR_EDAD.filter(entry => {
+      if (cfg.especial) return entry.especial === cfg.especial;
+      if (cfg.meses !== undefined) {
+        if (entry.edadMin_m !== undefined && entry.edadMax_m !== undefined &&
+            cfg.meses >= entry.edadMin_m && cfg.meses <= entry.edadMax_m) return true;
+        if (entry.edadMin_m !== undefined && entry.edadMax_m === undefined &&
+            cfg.meses >= entry.edadMin_m) return true;
+        const mY = cfg.meses / 12;
+        if (entry.edadMin_y !== undefined && entry.edadMax_y !== undefined &&
+            mY >= entry.edadMin_y && mY <= entry.edadMax_y) return true;
+      }
+      if (cfg.anios !== undefined) {
+        const maxA = cfg.maxAnios ?? cfg.anios;
+        if (entry.edadMin_y !== undefined && entry.edadMax_y !== undefined &&
+            cfg.anios <= entry.edadMax_y && maxA >= entry.edadMin_y) return true;
+        if (entry.edadMin_y !== undefined && entry.edadMax_y === undefined &&
+            maxA >= entry.edadMin_y) return true;
+      }
+      return false;
+    });
+
+    matches.forEach(entry => {
+      (entry.vacunas || []).forEach(v => {
+        if (vacunaEnEdad[v.sigla] !== undefined) {
+          vacunaEnEdad[v.sigla][col.key] = { tipo: v.tipo || "sistematica", nota: v.nota || "" };
+        }
+      });
+    });
+  });
+
+  // Grupos de columnas para cabecera secundaria
+  const colGroups = [
+    { label: "MESES", span: 7 },
+    { label: "INFANCIA", span: 2 },
+    { label: "ADOLESCENCIA", span: 3 },
+    { label: "EMBARAZO", span: 2 },
+    { label: "ADULTO / MAYOR", span: 4 },
+  ];
+
+  let html = `<table class="cal-table">
+    <thead>
+      <tr class="cal-head-row">
+        <th class="col-vacuna" rowspan="2">Vacuna</th>
+        ${colGroups.map(g => `<th class="col-grupo" colspan="${g.span}">${g.label}</th>`).join("")}
+      </tr>
+      <tr class="cal-head-row">
+        ${CAL_COLS.map(c => `<th>${c.label}</th>`).join("")}
+      </tr>
+    </thead>
+    <tbody>`;
+
+  CAL_ROWS.forEach(vacKey => {
+    const vac = VACUNAS[vacKey];
+    if (!vac) return;
+    const edadMap = vacunaEnEdad[vacKey];
+
+    html += `<tr class="cal-row">
+      <td class="cal-label">
+        ${vac.nombre.length > 28 ? vac.nombre.slice(0,27) + "…" : vac.nombre}
+        <span class="cal-sigla">${vac.sigla}</span>
+      </td>`;
+
+    CAL_COLS.forEach(col => {
+      const hit = edadMap[col.key];
+      if (hit) {
+        html += `<td class="cal-cell tipo-${hit.tipo}"
+          onclick="openVaccineModal('${vacKey}')"
+          title="${vac.nombre} · ${col.label}${hit.nota ? ' · ' + hit.nota : ''}">
+          <div class="cal-cell-inner">${vac.sigla}</div>
+        </td>`;
+      } else {
+        html += `<td></td>`;
+      }
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot sistematica"></div> Sistemática</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot rescate"></div> Rescate</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot estacional"></div> Estacional (campaña)</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot condicional"></div> Condicional</div>
+      <div class="cal-legend-item" style="margin-left:auto;color:var(--gris-muted);font-size:0.68rem">Pulsa cualquier celda para ver la ficha completa</div>
+    </div>`;
+
+  wrap.innerHTML = html;
 }
 
 // ===================================================
@@ -556,6 +734,9 @@ function applyImport() {
   CALENDARIO_POR_EDAD.length = 0;
   importedCalendario.forEach(e => CALENDARIO_POR_EDAD.push(e));
 
+  // Refrescar calendario visual
+  renderCalendario();
+
   document.getElementById("xlsxPreviewStep").classList.add("hidden");
   const totalV = importedCalendario.reduce((a,e) => a+e.vacunas.length, 0);
   document.getElementById("xlsxSuccessDetails").textContent =
@@ -563,11 +744,12 @@ function applyImport() {
   document.getElementById("xlsxSuccess").classList.remove("hidden");
   document.getElementById("xlsxSuccess").scrollIntoView({ behavior: "smooth" });
 
-  // Limpiar resultado de edad para que el usuario reconsulte
-  document.getElementById("edadResults").innerHTML = `
-    <div class="results-empty"><div class="empty-icon">🔄</div>
-    <p>Calendario actualizado. Selecciona una edad para ver los resultados.</p></div>`;
+  document.getElementById("edadResults") &&
+    (document.getElementById("edadResults").innerHTML = `
+      <div class="results-empty"><div class="empty-icon">🔄</div>
+      <p>Calendario actualizado. Selecciona una edad para ver los resultados.</p></div>`);
 }
+
 
 function downloadDataJs() {
   if (!importedCalendario) return;
