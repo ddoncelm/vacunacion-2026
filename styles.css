@@ -991,3 +991,296 @@ body {
   .app-header, .age-controls, #logoutBtn, .app-footer { display: none; }
   .tab-content { display: block !important; }
 }
+
+/* ===================================================
+   TABLERO VISUAL POR EDAD
+=================================================== */
+
+.age-board { display: flex; flex-direction: column; gap: 0; }
+
+.age-group-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--gris-muted);
+  padding: 1.1rem 0 0.45rem;
+  border-bottom: 1px solid var(--gris-border);
+  margin-bottom: 0.6rem;
+}
+
+.age-tiles-row {
+  display: flex; flex-wrap: wrap; gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.age-tile {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0.2rem;
+  width: 100px; min-height: 88px;
+  border-radius: 14px; border: 2px solid transparent;
+  cursor: pointer; padding: 0.7rem 0.5rem;
+  transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+  position: relative; overflow: hidden;
+  background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  font-family: var(--font-body);
+}
+.age-tile:hover { transform: translateY(-4px); box-shadow: 0 8px 22px rgba(0,0,0,0.16); }
+.age-tile.active { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.5); }
+
+.at-icon  { font-size: 1.35rem; line-height: 1; }
+.at-label { font-size: 0.8rem; font-weight: 700; text-align: center; line-height: 1.2; color: inherit; }
+.at-sub   { font-size: 0.65rem; opacity: 0.8; text-align: center; line-height: 1.2; color: inherit; }
+
+/* Colores inspirados en el calendario oficial de Andalucía */
+.tile-rn  { background: linear-gradient(135deg,#1A7EC8,#1565A8); color: white; }
+.tile-2m  { background: linear-gradient(135deg,#009A44,#006633); color: white; }
+.tile-4m  { background: linear-gradient(135deg,#00A878,#007A55); color: white; }
+.tile-6m  { background: linear-gradient(135deg,#5BB85D,#3A8A3C); color: white; }
+.tile-11m { background: linear-gradient(135deg,#E8960C,#B86F00); color: white; }
+.tile-12m { background: linear-gradient(135deg,#9B59B6,#6C3483); color: white; }
+.tile-15m { background: linear-gradient(135deg,#E74C3C,#C0392B); color: white; }
+.tile-2a  { background: linear-gradient(135deg,#F39C12,#D68910); color: white; }
+.tile-6a  { background: linear-gradient(135deg,#2ECC71,#1A9F52); color: white; }
+.tile-12a { background: linear-gradient(135deg,#3498DB,#1A6AA8); color: white; }
+.tile-14a { background: linear-gradient(135deg,#1ABC9C,#0E8C72); color: white; }
+.tile-emb { background: linear-gradient(135deg,#E91E8C,#B5166D); color: white; }
+.tile-pue { background: linear-gradient(135deg,#F06292,#C2185B); color: white; }
+.tile-60a { background: linear-gradient(135deg,#546E7A,#37474F); color: white; }
+.tile-65a { background: linear-gradient(135deg,#006633,#004422); color: white; }
+.tile-66a { background: linear-gradient(135deg,#4A7C4E,#2E5531); color: white; }
+.tile-70a { background: linear-gradient(135deg,#1B5E20,#0A3010); color: white; }
+
+/* ===== PANEL DE RESULTADOS ===== */
+.age-panel {
+  margin-top: 1.25rem; background: white;
+  border-radius: var(--radius-lg); border: 2px solid var(--verde);
+  box-shadow: var(--shadow-lg); overflow: hidden;
+  animation: slidePanel 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes slidePanel {
+  from { opacity:0; transform: translateY(16px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.age-panel.hidden { display: none; }
+
+.age-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--gris-border);
+  background: var(--verde-dark); gap: 0.75rem;
+}
+.age-panel-title-wrap { display: flex; align-items: center; gap: 0.75rem; }
+.age-panel-icon  { font-size: 1.8rem; flex-shrink: 0; }
+.age-panel-title { font-family: var(--font-display); font-size: 1.2rem; color: white; margin: 0; line-height: 1.1; }
+.age-panel-sub   { color: rgba(255,255,255,0.65); font-size: 0.8rem; margin-top: 0.15rem; }
+.age-panel-close {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  color: white; width: 32px; height: 32px; border-radius: 50%;
+  cursor: pointer; font-size: 0.85rem; flex-shrink: 0; transition: all var(--transition);
+}
+.age-panel-close:hover { background: rgba(220,50,50,0.45); }
+
+.age-panel-cards {
+  padding: 1.25rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.9rem;
+}
+
+/* Tarjeta de vacuna dentro del panel */
+.panel-vcard {
+  background: var(--gris-bg); border-radius: 12px;
+  border: 1px solid var(--gris-border); padding: 1rem;
+  cursor: pointer; transition: all 0.18s ease;
+  position: relative; overflow: hidden;
+}
+.panel-vcard::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; border-radius: 2px 0 0 2px;
+}
+.panel-vcard.tipo-sistematica::before  { background: var(--verde); }
+.panel-vcard.tipo-rescate::before      { background: var(--warning); }
+.panel-vcard.tipo-estacional::before   { background: #3498DB; }
+.panel-vcard.tipo-condicional::before  { background: #9B59B6; }
+.panel-vcard:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--verde); background: white; }
+
+.pvc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
+.pvc-nombre { font-weight: 700; font-size: 0.9rem; color: var(--verde-dark); line-height: 1.2; }
+.pvc-tipo {
+  font-size: 0.63rem; font-weight: 700; padding: 0.18rem 0.45rem;
+  border-radius: 20px; flex-shrink: 0; white-space: nowrap;
+  letter-spacing: 0.03em; text-transform: uppercase;
+}
+.tipo-sistematica .pvc-tipo  { background: var(--verde-light); color: var(--verde-dark); }
+.tipo-rescate .pvc-tipo      { background: #FFF4E0; color: #935A00; }
+.tipo-estacional .pvc-tipo   { background: #E3F0FF; color: #1A4A8A; }
+.tipo-condicional .pvc-tipo  { background: #F3E8FF; color: #5A1A8A; }
+
+.pvc-comercial { font-size: 0.78rem; color: var(--gris-muted); margin-bottom: 0.5rem; }
+.pvc-contexto  {
+  font-size: 0.78rem; color: var(--gris-text); background: white; border-radius: 6px;
+  padding: 0.4rem 0.6rem; line-height: 1.4; border: 1px solid var(--gris-border); margin-bottom: 0.6rem;
+}
+.pvc-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.pvc-tag  {
+  font-size: 0.68rem; padding: 0.18rem 0.5rem; border-radius: 20px;
+  border: 1px solid var(--gris-border); background: white; color: var(--gris-muted);
+}
+.pvc-tag.im   { background: #E8F5EE; color: var(--verde-dark); border-color: #b3ddc5; }
+.pvc-tag.sc   { background: #FFF4E0; color: #935A00; border-color: #ffd380; }
+.pvc-tag.oral { background: #E3F0FF; color: #1A4A8A; border-color: #a8c8f0; }
+.pvc-tag.in   { background: #F0E8FF; color: #5A1A8A; border-color: #c8a8f0; }
+.pvc-more { font-size: 0.72rem; color: var(--verde); font-weight: 600; margin-top: 0.5rem; }
+
+.panel-empty { grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--gris-muted); }
+
+@media (max-width: 600px) {
+  .age-tile { width: calc(33.33% - 0.45rem); min-height: 78px; }
+  .at-label { font-size: 0.72rem; }
+  .age-panel-cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 380px) {
+  .age-tile { width: calc(50% - 0.35rem); }
+}
+
+/* ===================================================
+   LOGO DONCELPROJECT (SVG)
+=================================================== */
+.dp-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 7px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.dp-link:hover {
+  background: rgba(0,198,255,0.2);
+  border-color: rgba(0,198,255,0.4);
+  transform: translateY(-1px);
+}
+.dp-svg {
+  width: 18px; height: 18px;
+  display: block;
+}
+
+/* ===================================================
+   CALENDARIO VISUAL COMPLETO
+=================================================== */
+.cal-scroll-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--gris-border);
+  background: white;
+}
+
+.cal-table-wrap {
+  min-width: 900px;
+}
+
+/* Tabla interna */
+.cal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+/* Cabecera de edades */
+.cal-head-row th {
+  background: var(--verde-dark);
+  color: white;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.5rem 0.35rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  white-space: nowrap;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+.cal-head-row th.col-vacuna {
+  text-align: left;
+  padding-left: 0.75rem;
+  min-width: 160px;
+  font-size: 0.75rem;
+}
+.cal-head-row th.col-grupo {
+  background: rgba(0,0,0,0.3);
+  font-size: 0.65rem;
+  font-weight: 400;
+  opacity: 0.8;
+  letter-spacing: 0.04em;
+}
+
+/* Fila de vacuna */
+.cal-row td {
+  border: 1px solid var(--gris-border);
+  padding: 0;
+  text-align: center;
+  height: 36px;
+}
+.cal-row:nth-child(even) td { background: #FAFCFB; }
+.cal-row:hover td { background: var(--verde-light); }
+
+.cal-row td.cal-label {
+  text-align: left; padding: 0 0.5rem 0 0.75rem;
+  font-weight: 600; color: var(--verde-dark);
+  white-space: nowrap; background: var(--gris-bg) !important;
+  border-right: 2px solid var(--verde);
+  font-size: 0.75rem;
+}
+.cal-row td.cal-label .cal-sigla {
+  font-size: 0.65rem; color: var(--gris-muted);
+  font-weight: 400; margin-left: 0.3rem;
+}
+
+/* Celdas con vacuna activa */
+.cal-cell {
+  cursor: pointer;
+  position: relative;
+  transition: filter 0.15s;
+}
+.cal-cell:hover { filter: brightness(1.12); }
+
+.cal-cell-inner {
+  width: 100%; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700;
+  color: white; letter-spacing: 0.03em;
+  border-radius: 0;
+}
+
+/* Colores por tipo */
+.cal-cell.tipo-sistematica .cal-cell-inner  { background: var(--verde); }
+.cal-cell.tipo-rescate .cal-cell-inner      { background: var(--warning); }
+.cal-cell.tipo-estacional .cal-cell-inner   { background: #3498DB; }
+.cal-cell.tipo-condicional .cal-cell-inner  { background: #9B59B6; }
+
+/* Separadores de grupo de edad */
+.cal-sep-head th {
+  background: #E8F0EB;
+  color: var(--gris-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--gris-border);
+}
+
+/* Leyenda */
+.cal-legend {
+  display: flex; flex-wrap: wrap; gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid var(--gris-border);
+  background: var(--gris-bg);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.cal-legend-item {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.72rem; color: var(--gris-text);
+}
+.cal-legend-dot {
+  width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+}
+.cal-legend-dot.sistematica  { background: var(--verde); }
+.cal-legend-dot.rescate      { background: var(--warning); }
+.cal-legend-dot.estacional   { background: #3498DB; }
+.cal-legend-dot.condicional  { background: #9B59B6; }
