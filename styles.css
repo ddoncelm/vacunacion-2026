@@ -1140,38 +1140,38 @@ body {
 
 
 
+
 /* ===================================================
-   LOGO DONCELPROJECT (imagen real)
+   LOGO DONCELPROJECT
 =================================================== */
 .dp-link {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  width: 36px; height: 36px;
+  background: #0D1B2A;
+  border: 1px solid rgba(0,160,255,0.35);
   border-radius: 8px;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.22s ease;
   flex-shrink: 0;
-  padding: 4px;
+  padding: 5px;
 }
 .dp-link:hover {
-  background: rgba(0,150,255,0.25);
-  border-color: rgba(0,150,255,0.55);
+  background: #0D2A45;
+  border-color: rgba(0,198,255,0.7);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,150,255,0.25);
+  box-shadow: 0 4px 14px rgba(0,150,255,0.35);
 }
 .dp-img {
   width: 24px; height: 24px;
   object-fit: contain;
   display: block;
-  /* Sobre fondo oscuro: invertir para que se vea bien */
-  filter: brightness(0) invert(1) opacity(0.75);
-  transition: filter 0.2s ease;
+  filter: none;
+  transition: filter 0.22s ease;
 }
 .dp-link:hover .dp-img {
-  filter: brightness(0) invert(1) opacity(1)
-          drop-shadow(0 0 4px rgba(0,198,255,0.6));
+  filter: drop-shadow(0 0 3px rgba(0,198,255,0.7));
 }
+
 
 
 
