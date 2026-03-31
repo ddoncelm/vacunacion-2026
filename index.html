@@ -11,6 +11,26 @@
 </head>
 <body>
 
+<!-- SVG del logo doncelproject (reutilizable con <use>) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <defs>
+    <linearGradient id="dpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#00C6FF"/>
+      <stop offset="100%" stop-color="#0072FF"/>
+    </linearGradient>
+    <!-- Icono DP compacto -->
+    <symbol id="dp-icon" viewBox="0 0 32 32">
+      <!-- D arc -->
+      <path d="M4 4 h8 a12 12 0 0 1 0 24 H4 Z" fill="none" stroke="url(#dpGrad)" stroke-width="3" stroke-linejoin="round"/>
+      <!-- P stem + bowl -->
+      <path d="M10 4 h5 a7 7 0 0 1 0 14 H10" fill="none" stroke="url(#dpGrad)" stroke-width="3" stroke-linejoin="round"/>
+      <!-- Arrow diagonal -->
+      <path d="M14 16 L22 28" stroke="url(#dpGrad)" stroke-width="2.5" stroke-linecap="round"/>
+      <polygon points="22,28 18,22 25,21" fill="url(#dpGrad)"/>
+    </symbol>
+  </defs>
+</svg>
+
 <!-- ==================== LOGIN SCREEN ==================== -->
 <div id="loginScreen" class="screen active">
   <div class="login-bg">
@@ -38,8 +58,8 @@
     </div>
   </div>
   <footer class="app-footer">
-    <a href="mailto:doncel.project@gmail.com" class="doncel-logo" title="doncelproject">
-      <span class="dp-logo">dp</span>
+    <a href="mailto:doncel.project@gmail.com" class="dp-link" title="doncelproject · doncel.project@gmail.com" aria-label="doncelproject">
+      <svg class="dp-svg" viewBox="0 0 32 32"><use href="#dp-icon"/></svg>
     </a>
   </footer>
 </div>
@@ -58,9 +78,10 @@
         </div>
       </div>
       <nav class="header-nav">
-        <button class="nav-btn active" data-tab="por-edad">Por Edad</button>
-        <button class="nav-btn" data-tab="por-vacuna">Por Vacuna</button>
-        <button class="nav-btn" data-tab="grupos-riesgo">Grupos Riesgo</button>
+        <button class="nav-btn active"       data-tab="por-edad">Por Edad</button>
+        <button class="nav-btn"              data-tab="calendario">📅 Calendario</button>
+        <button class="nav-btn"              data-tab="por-vacuna">Por Vacuna</button>
+        <button class="nav-btn"              data-tab="grupos-riesgo">Grupos Riesgo</button>
         <button class="nav-btn nav-btn-update" data-tab="actualizar">⬆ Actualizar</button>
       </nav>
       <button id="logoutBtn" class="btn-logout" title="Cerrar sesión">✕</button>
@@ -70,57 +91,111 @@
   <!-- Main Content -->
   <main class="app-main">
 
-    <!-- TAB: POR EDAD -->
+    <!-- TAB: POR EDAD — tablero visual -->
     <section id="tab-por-edad" class="tab-content active">
+
+      <div class="age-board" id="ageBoard">
+        <div class="age-group-label">👶 Lactante</div>
+        <div class="age-tiles-row">
+          <button class="age-tile tile-rn"  data-age-key="rn">
+            <span class="at-icon">🏥</span><span class="at-label">Recién<br>nacido</span><span class="at-sub">0 meses</span>
+          </button>
+          <button class="age-tile tile-2m"  data-age-key="2m">
+            <span class="at-icon">💉</span><span class="at-label">2 meses</span><span class="at-sub">1ª visita</span>
+          </button>
+          <button class="age-tile tile-4m"  data-age-key="4m">
+            <span class="at-icon">💉</span><span class="at-label">4 meses</span><span class="at-sub">2ª visita</span>
+          </button>
+          <button class="age-tile tile-6m"  data-age-key="6m">
+            <span class="at-icon">💉</span><span class="at-label">6 meses</span><span class="at-sub">3ª visita</span>
+          </button>
+          <button class="age-tile tile-11m" data-age-key="11m">
+            <span class="at-icon">💉</span><span class="at-label">11 meses</span><span class="at-sub">Refuerzo</span>
+          </button>
+          <button class="age-tile tile-12m" data-age-key="12m">
+            <span class="at-icon">💉</span><span class="at-label">12 meses</span><span class="at-sub">1 año</span>
+          </button>
+          <button class="age-tile tile-15m" data-age-key="15m">
+            <span class="at-icon">💉</span><span class="at-label">15 meses</span><span class="at-sub">Refuerzo</span>
+          </button>
+        </div>
+
+        <div class="age-group-label">🧒 Infancia</div>
+        <div class="age-tiles-row">
+          <button class="age-tile tile-2a"  data-age-key="2a">
+            <span class="at-icon">🌟</span><span class="at-label">2–3 años</span><span class="at-sub">Novedad 2026</span>
+          </button>
+          <button class="age-tile tile-6a"  data-age-key="6a">
+            <span class="at-icon">🏫</span><span class="at-label">6 años</span><span class="at-sub">Escolar</span>
+          </button>
+        </div>
+
+        <div class="age-group-label">🧑 Adolescencia</div>
+        <div class="age-tiles-row">
+          <button class="age-tile tile-12a" data-age-key="12a">
+            <span class="at-icon">🏫</span><span class="at-label">12 años</span><span class="at-sub">Escolar</span>
+          </button>
+          <button class="age-tile tile-14a" data-age-key="14a">
+            <span class="at-icon">💉</span><span class="at-label">14 años</span><span class="at-sub">Refuerzo Tdpa</span>
+          </button>
+          <button class="age-tile tile-14a" data-age-key="rescate-13-21">
+            <span class="at-icon">🔄</span><span class="at-label">13–21 años</span><span class="at-sub">Rescate</span>
+          </button>
+        </div>
+
+        <div class="age-group-label">🤰 Embarazo y puerperio</div>
+        <div class="age-tiles-row">
+          <button class="age-tile tile-emb" data-age-key="embarazo">
+            <span class="at-icon">🤰</span><span class="at-label">Embarazada</span><span class="at-sub">Cualquier trimestre</span>
+          </button>
+          <button class="age-tile tile-pue" data-age-key="puerperio">
+            <span class="at-icon">👩‍🍼</span><span class="at-label">Puerperio</span><span class="at-sub">0–6 meses postparto</span>
+          </button>
+        </div>
+
+        <div class="age-group-label">👴 Adulto y mayor</div>
+        <div class="age-tiles-row">
+          <button class="age-tile tile-60a" data-age-key="60a">
+            <span class="at-icon">💊</span><span class="at-label">60–80 años</span><span class="at-sub">Neumococo + Gripe</span>
+          </button>
+          <button class="age-tile tile-65a" data-age-key="65a">
+            <span class="at-icon">⭐</span><span class="at-label">65 años</span><span class="at-sub">Herpes zóster</span>
+          </button>
+          <button class="age-tile tile-66a" data-age-key="66-67a">
+            <span class="at-icon">🔄</span><span class="at-label">66–67 años</span><span class="at-sub">Rescate HZ</span>
+          </button>
+          <button class="age-tile tile-70a" data-age-key="70a">
+            <span class="at-icon">🛡️</span><span class="at-label">≥ 70 años</span><span class="at-sub">COVID anual</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel de resultados -->
+      <div id="agePanel" class="age-panel hidden">
+        <div class="age-panel-header">
+          <div class="age-panel-title-wrap">
+            <span id="agePanelIcon" class="age-panel-icon"></span>
+            <div>
+              <h2 id="agePanelTitle" class="age-panel-title"></h2>
+              <p id="agePanelSub" class="age-panel-sub"></p>
+            </div>
+          </div>
+          <button class="age-panel-close" id="agePanelClose" title="Cerrar">✕</button>
+        </div>
+        <div id="agePanelCards" class="age-panel-cards"></div>
+      </div>
+
+    </section>
+
+    <!-- TAB: CALENDARIO VISUAL COMPLETO -->
+    <section id="tab-calendario" class="tab-content hidden">
       <div class="section-header">
-        <h2>Buscar por edad del paciente</h2>
-        <p>Selecciona o introduce la edad para ver las vacunas correspondientes</p>
+        <h2>Calendario sistemático 2026</h2>
+        <p>Vista completa del calendario. Pulsa cualquier celda para ver la ficha de esa vacuna.</p>
       </div>
-      
-      <div class="age-controls">
-        <div class="age-type-selector">
-          <button class="type-btn active" data-type="meses">Meses (0–24)</button>
-          <button class="type-btn" data-type="anios">Años (2–80+)</button>
-        </div>
-
-        <div id="mesesControl" class="slider-control">
-          <label>Edad en meses: <strong id="mesesValue">0</strong></label>
-          <input type="range" id="mesesSlider" min="0" max="24" value="0" step="1" />
-          <div class="slider-marks">
-            <span>RN</span><span>2m</span><span>4m</span><span>6m</span><span>11m</span><span>12m</span><span>15m</span><span>18m</span><span>24m</span>
-          </div>
-        </div>
-
-        <div id="aniosControl" class="slider-control hidden">
-          <label>Edad en años: <strong id="aniosValue">2</strong></label>
-          <input type="range" id="aniosSlider" min="2" max="85" value="2" step="1" />
-          <div class="slider-marks">
-            <span>2</span><span>6</span><span>12</span><span>14</span><span>18</span><span>60</span><span>65</span><span>70</span><span>80+</span>
-          </div>
-        </div>
-
-        <div class="quick-ages">
-          <span class="qa-label">Acceso rápido:</span>
-          <button class="qa-btn" data-m="0">RN</button>
-          <button class="qa-btn" data-m="2">2m</button>
-          <button class="qa-btn" data-m="4">4m</button>
-          <button class="qa-btn" data-m="6">6m</button>
-          <button class="qa-btn" data-m="11">11m</button>
-          <button class="qa-btn" data-m="12">12m</button>
-          <button class="qa-btn" data-m="15">15m</button>
-          <button class="qa-btn" data-y="2">2a</button>
-          <button class="qa-btn" data-y="6">6a</button>
-          <button class="qa-btn" data-y="12">12a</button>
-          <button class="qa-btn" data-y="14">14a</button>
-          <button class="qa-btn" data-y="65">65a</button>
-          <button class="qa-btn" data-y="70">70a</button>
-        </div>
-      </div>
-
-      <div id="edadResults" class="results-area">
-        <div class="results-empty">
-          <div class="empty-icon">🔍</div>
-          <p>Selecciona una edad para ver las vacunas indicadas</p>
+      <div class="cal-scroll-wrap">
+        <div class="cal-table-wrap" id="calTable">
+          <!-- Generado por JS -->
         </div>
       </div>
     </section>
@@ -131,14 +206,8 @@
         <h2>Buscar por vacuna</h2>
         <p>Selecciona una vacuna para ver cuándo y cómo se administra</p>
       </div>
-
-      <div class="vaccine-grid" id="vaccineGrid">
-        <!-- Generated by JS -->
-      </div>
-
-      <div id="vaccineDetail" class="vaccine-detail hidden">
-        <!-- Generated by JS -->
-      </div>
+      <div class="vaccine-grid" id="vaccineGrid"></div>
+      <div id="vaccineDetail" class="vaccine-detail hidden"></div>
     </section>
 
     <!-- TAB: GRUPOS DE RIESGO -->
@@ -147,7 +216,6 @@
         <h2>Vacunación en grupos de riesgo</h2>
         <p>Indicaciones especiales según patología o condición de riesgo</p>
       </div>
-
       <div class="risk-filter">
         <button class="risk-filter-btn active" data-risk="all">Todas</button>
         <button class="risk-filter-btn" data-risk="neumococo">Neumococo</button>
@@ -157,10 +225,7 @@
         <button class="risk-filter-btn" data-risk="hepatitis">Hepatitis A/B</button>
         <button class="risk-filter-btn" data-risk="mpox">Mpox</button>
       </div>
-
-      <div id="riskResults" class="risk-results">
-        <!-- Generated by JS -->
-      </div>
+      <div id="riskResults" class="risk-results"></div>
     </section>
 
     <!-- TAB: ACTUALIZAR CALENDARIO -->
@@ -170,7 +235,6 @@
         <p>Descarga el Excel con los datos actuales, edítalo y vuelve a importarlo. Sin coste, sin internet adicional.</p>
       </div>
 
-      <!-- Paso 1: Descargar plantilla -->
       <div class="update-step">
         <div class="step-header">
           <span class="step-num">1</span>
@@ -190,23 +254,22 @@
             </div>
             <div class="tinfo-item">
               <span class="tinfo-icon">📎</span>
-              <div><strong>Hoja Vacunas (referencia)</strong> — solo consulta. Muestra todas las siglas disponibles para usar en la hoja Calendario.</div>
+              <div><strong>Hoja Vacunas (referencia)</strong> — solo consulta. Muestra todas las siglas disponibles.</div>
             </div>
             <div class="tinfo-item">
               <span class="tinfo-icon">💡</span>
-              <div>Para añadir una vacuna nueva a una edad: inserta una fila nueva debajo del grupo con la misma etiqueta de edad en blanco y escribe la sigla, tipo y nota.</div>
+              <div>Para añadir una vacuna nueva a una edad: inserta una fila debajo del grupo con la etiqueta en blanco y escribe la sigla, tipo y nota.</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Paso 2: Reimportar -->
       <div class="update-step">
         <div class="step-header">
           <span class="step-num">2</span>
           <div>
             <h3>Importar Excel editado</h3>
-            <p>Cuando hayas guardado los cambios en el Excel, arrástralo aquí o pulsa para seleccionarlo.</p>
+            <p>Cuando hayas guardado los cambios, arrástralo aquí o pulsa para seleccionarlo.</p>
           </div>
         </div>
         <div class="drop-zone" id="dropZoneXlsx">
@@ -225,13 +288,12 @@
         </div>
       </div>
 
-      <!-- Paso 3: Preview y confirmación -->
       <div id="xlsxPreviewStep" class="update-step hidden">
         <div class="step-header">
           <span class="step-num">3</span>
           <div>
             <h3>Revisar y confirmar</h3>
-            <p>Comprueba el resumen antes de aplicar. Los cambios solo afectan a la sección <strong>Por Edad</strong>.</p>
+            <p>Comprueba el resumen antes de aplicar. Los cambios afectan a la sección <strong>Por Edad</strong> y al <strong>Calendario visual</strong>.</p>
           </div>
         </div>
         <div id="xlsxPreviewContent" class="preview-content"></div>
@@ -242,7 +304,6 @@
         </div>
       </div>
 
-      <!-- Éxito -->
       <div id="xlsxSuccess" class="update-success hidden">
         <div class="success-icon">🎉</div>
         <h3>¡Calendario actualizado!</h3>
@@ -250,17 +311,15 @@
         <div class="success-actions">
           <button id="xlsxDownloadDataBtn" class="btn-download">⬇ Descargar snippet data.js</button>
           <p class="success-hint">
-            El archivo descargado contiene el nuevo <code>CALENDARIO_POR_EDAD</code>. 
-            Pégalo en tu <code>data.js</code> de GitHub para hacerlo permanente en todos los dispositivos.
+            Pega el contenido en tu <code>data.js</code> de GitHub para hacerlo permanente.
           </p>
         </div>
       </div>
-
     </section>
 
   </main>
 
-  <!-- Vaccine Detail Modal -->
+  <!-- Modal vacuna -->
   <div id="vaccineModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
     <div class="modal-card">
       <button class="modal-close" id="modalClose">✕</button>
@@ -270,8 +329,8 @@
 
   <footer class="app-footer">
     <p>Instrucción DGSPyOF-1/2026 · Junta de Andalucía</p>
-    <a href="mailto:doncel.project@gmail.com" class="doncel-logo" title="doncelproject">
-      <span class="dp-logo">dp</span>
+    <a href="mailto:doncel.project@gmail.com" class="dp-link" title="doncelproject · doncel.project@gmail.com" aria-label="doncelproject">
+      <svg class="dp-svg" viewBox="0 0 32 32"><use href="#dp-icon"/></svg>
     </a>
   </footer>
 
