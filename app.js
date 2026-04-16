@@ -42,6 +42,39 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   passwordInput.value = "";
 });
 
+
+// ===================================================
+// FOTOS DE ENVASES
+// ===================================================
+function getFotoVacuna(comercial) {
+  if (typeof FOTOS_VACUNAS === "undefined") return null;
+  if (FOTOS_VACUNAS[comercial]) return FOTOS_VACUNAS[comercial];
+  // Buscar coincidencia parcial (para vacunas con múltiples comerciales)
+  const key = Object.keys(FOTOS_VACUNAS).find(k =>
+    comercial.includes(k.replace("®","")) || k.replace("®","").split("/").some(p => comercial.includes(p.trim()))
+  );
+  return key ? FOTOS_VACUNAS[key] : null;
+}
+
+function fotoHtml(comercial, size = "modal") {
+  const src = getFotoVacuna(comercial);
+  if (!src) return "";
+  if (size === "modal") {
+    return `<div style="text-align:center;margin-bottom:1rem">
+      <img src="${src}" alt="${comercial}" style="max-height:140px;max-width:100%;object-fit:contain;border-radius:10px;background:#f8faf9;padding:0.75rem;border:1px solid var(--gris-border)">
+    </div>`;
+  }
+  if (size === "card") {
+    return `<img src="${src}" alt="${comercial}" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#f8faf9;padding:4px;border:1px solid var(--gris-border);flex-shrink:0">`;
+  }
+  if (size === "detail") {
+    return `<div style="text-align:center;margin-bottom:1.25rem">
+      <img src="${src}" alt="${comercial}" style="max-height:120px;max-width:220px;object-fit:contain;border-radius:10px;background:#f8faf9;padding:0.75rem;border:1px solid var(--gris-border)">
+    </div>`;
+  }
+  return "";
+}
+
 // ===== INIT =====
 function initApp() {
   initTabs();
@@ -196,7 +229,10 @@ function showAgePanel(key, tile) {
             <div class="pvc-nombre">${vac.nombre}</div>
             <div class="pvc-tipo">${tipoLabel}</div>
           </div>
-          <div class="pvc-comercial">🏷️ ${vac.comercial}</div>
+          <div class="pvc-comercial" style="display:flex;align-items:center;gap:0.5rem">
+            ${fotoHtml(vac.comercial, "card")}
+            <span>🏷️ ${vac.comercial}</span>
+          </div>
           <div class="pvc-contexto">${v.nota || vac.momentos}</div>
           <div class="pvc-tags">
             <span class="pvc-tag ${vac.via}">💉 ${vac.viaLabel}</span>
@@ -388,6 +424,7 @@ function renderVaccineDetail(key) {
         <div class="vd-title">${vac.nombre}</div>
         <div class="vd-subtitle">${vac.nombreCompleto}</div>
       </div>
+      ${fotoHtml(vac.comercial, "detail")}
     </div>
     <div class="vd-grid">
       <div class="vd-item"><div class="vd-item-label">🏷️ Comercial (SSPA)</div><div class="vd-item-value">${vac.comercial}</div></div>
@@ -414,6 +451,7 @@ function openVaccineModal(key) {
   const vac = VACUNAS[key];
   if (!vac) return;
   document.getElementById("modalContent").innerHTML = `
+    ${fotoHtml(vac.comercial, "modal")}
     <div style="margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--gris-border)">
       <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--verde-dark)">${vac.nombre}</div>
       <div style="color:var(--gris-muted);font-size:0.85rem;margin-top:0.2rem">${vac.nombreCompleto}</div>
